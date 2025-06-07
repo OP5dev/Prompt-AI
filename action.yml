@@ -32,11 +32,10 @@ runs:
       shell: bash
       env:
         API_VERSION: ${{ inputs.github-api-version }}
-        GH_HOST: ${{ github.server_url }}
         GH_TOKEN: ${{ inputs.github-token }}
         ORG: ${{ inputs.org != '' && format('orgs/{0}/', inputs.org) || '' }}
       run: |
-        GH_HOST=$(echo $GH_HOST | sed 's/.*:\/\///')
+        GH_HOST=$(echo $GITHUB_SERVER_URL | sed 's/.*:\/\///')
 
         response_raw=$(curl --request POST --location https://models.github.ai/${ORG}inference/chat/completions \
           --header "Accept: application/vnd.github+json" \
@@ -44,10 +43,13 @@ runs:
           --header "Content-Type: application/json" \
           --header "X-GitHub-Api-Version: $API_VERSION" \
           --data '{
-            "messages": '"${{ inputs.messages }}"',
-            "model": '"${{ inputs.model }}"'
-          }')
+            "messages": '[{"role": "user", "content": "Hello!"}]',
+            "model": "${{ inputs.model }}"
+            }')
 
+        # "messages": '"${{ inputs.messages }}"',
+        # "model": '"${{ inputs.model }}"'
+        echo $response_raw
         echo "response_raw=$response_raw" >> $GITHUB_OUTPUT
         echo "response=$response_raw | jq --raw-output '.choices[0].message.content'" >> $GITHUB_OUTPUT
 
