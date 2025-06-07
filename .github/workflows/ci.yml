@@ -29,8 +29,9 @@ jobs:
         id: prompt
         uses: ./
         with:
-          messages: '[{"role": "user", "content": "Hello!"}]'
-          model: "openai/o4-mini"
+          messages: '[{"role": "user", "content": "What is the capital of France?"}]'
+          model: openai/o4-mini
+          org: op5dev
 
       - name: Echo outputs
         continue-on-error: true
