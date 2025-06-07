@@ -11,7 +11,7 @@ jobs:
 
     permissions:
       contents: read # Required to checkout repository.
-      models: read # Required for model inference.
+      models: read # Required for AI inference.
 
     steps:
       - name: Echo context
@@ -31,7 +31,8 @@ jobs:
         with:
           messages: '[{"role": "user", "content": "What is the capital of France?"}]'
           model: openai/o4-mini
-          org: op5dev
+          org: ${{ github.repository_owner}}
+          max-tokens: 100
 
       - name: Echo outputs
         continue-on-error: true

@@ -12,7 +12,56 @@
 
 ## Usage Examples
 
+```yml
+on:
+  issues:
+    types: opened
+
+jobs:
+  summary:
+    runs-on: ubuntu-latest
+
+    permissions:
+      issues: write
+      models: read
+
+    steps:
+      - name: Summarize issue
+        id: prompt
+        uses: op5dev/ai-inference-request@v2
+        with:
+          messages: '[{"role": "user", "content": "Concisely summarize this GitHub issue titled ${{ github.event.issue.title }}: ${{ github.event.issue.body }}"}]'
+          model: openai/o4-mini
+
+      - name: Comment summary
+        run: gh issue comment $NUMBER --body "$SUMMARY"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBER: ${{ github.event.issue.number }}
+          SUMMARY: ${{ steps.prompt.outputs.response }}
+```
+
 </br>
+
+## Inputs
+
+Only `messages` and `model` are required inputs. [Compare available AI models](https://docs.github.com/en/copilot/using-github-copilot/ai-models/choosing-the-right-ai-model-for-your-task "Comparison of AI models for GitHub.") to choose the best one for your use-case.
+
+| Name                 | Description                                                                                          |
+| -------------------- | ---------------------------------------------------------------------------------------------------- |
+| `github-api-version` | GitHub API version.</br>Default: `2022-11-28`                                                        |
+| `github-token`       | GitHub token.</br>Default: `github.token`                                                            |
+| `max-tokens`         | Maximum number of tokens to generate in the completion.</br>Example: `1000`                          |
+| `messages`           | Messages to send to the model in JSON format.</br>Example: `[{"role": "user", "content": "Hello!"}]` |
+| `model`              | Model to use for inference.</br>Example: `openai/o4-mini`                                            |
+| `org`                | Organization to which the request should be attributed.</br>Example: `github.repository_owner`       |
+
+## Outputs
+
+| Name           | Description                                  |
+| -------------- | -------------------------------------------- |
+| `response`     | Response content from the inference request. |
+| `response-raw` | Raw, complete response in JSON format.       |
 
 ## Security
 
