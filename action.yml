@@ -1,0 +1,64 @@
+---
+name: Inference Request via GitHub Action
+author: Rishav Dhar (https://rdhar.dev)
+description: Run inference requests to GitHub Models with this GitHub Action.
+
+inputs:
+  github-api-version:
+    default: "2022-11-28"
+    description: "GitHub API version (e.g., `2022-11-28`)."
+    required: false
+  github-token:
+    default: ${{ github.token }}
+    description: "GitHub token (e.g., `secrets.GITHUB_TOKEN`)."
+    required: false
+  messages:
+    default: "[]"
+    description: 'Messages to send to the model in JSON format (e.g., `[{"role": "user", "content": "Hello!"}]`).'
+    required: true
+  model:
+    default: "openai/o4-mini"
+    description: "Model to use for inference (e.g., `openai/o4-mini`)."
+    required: true
+  org:
+    default: ""
+    description: "Organization to which the request should be attributed (e.g., `op5dev`)."
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - id: request
+      shell: bash
+      env:
+        API_VERSION: ${{ inputs.github-api-version }}
+        GH_HOST: ${{ github.server_url }}
+        GH_TOKEN: ${{ inputs.github-token }}
+        ORG: ${{ inputs.org != '' && format('orgs/{0}/', inputs.org) || '' }}
+      run: |
+        GH_HOST=$(echo $GH_HOST | sed 's/.*:\/\///')
+
+        response_raw=$(curl --request POST --location https://models.github.ai/${ORG}inference/chat/completions \
+          --header "Accept: application/vnd.github+json" \
+          --header "Authorization: Bearer $GH_TOKEN" \
+          --header "Content-Type: application/json" \
+          --header "X-GitHub-Api-Version: $API_VERSION" \
+          --data '{
+            "messages": '"${{ inputs.messages }}"',
+            "model": '"${{ inputs.model }}"'
+          }')
+
+        echo "response_raw=$response_raw" >> $GITHUB_OUTPUT
+        echo "response=$response_raw | jq --raw-output '.choices[0].message.content'" >> $GITHUB_OUTPUT
+
+outputs:
+  response:
+    description: "Placeholder."
+    value: ${{ steps.request.outputs.response }}
+  response-raw:
+    description: "Placeholder."
+    value: ${{ steps.request.outputs.response_raw }}
+
+branding:
+  color: white
+  icon: loader

@@ -6,7 +6,7 @@
 # Inference Request via GitHub Action
 
 > [!TIP]
-> Run an inference request to GitHub Models via GitHub Action.
+> Run [inference requests](https://docs.github.com/en/rest/models/inference#run-an-inference-request "GitHub API documentation.") to [GitHub Models](https://github.com/marketplace?type=models "GitHub models catalog.") with this GitHub Action.
 
 </br>
 
@@ -43,4 +43,4 @@ View [all notable changes](https://github.com/op5dev/inference-request/releases 
 
 - This project is licensed under the **permissive** [Apache License 2.0](LICENSE "Apache License 2.0.").
 - All works herein are my own, shared of my own volition, and [contributors](https://github.com/op5dev/inference-request/graphs/contributors "Contributors.").
-- Copyright 2016-present [Rishav Dhar](https://github.com/rdhar "Rishav Dhar's GitHub profile.") — All wrongs reserved.
+- Copyright 2016-present [Rishav Dhar](https://rdhar.dev "Rishav Dhar's profile.") — All wrongs reserved.
