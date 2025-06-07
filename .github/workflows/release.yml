@@ -10,7 +10,7 @@ jobs:
     runs-on: [ubuntu-24.04]
 
     permissions:
-      contents: write # Required to checkout repository.
+      contents: write # Required to create tags.
       id-token: write # Required for authentication.
       packages: write # Required to publish packages.
 

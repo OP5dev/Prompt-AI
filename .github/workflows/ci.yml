@@ -1,0 +1,41 @@
+---
+name: CI
+
+on:
+  pull_request:
+    paths: [action.yml, .github/workflows/ci.yml]
+
+jobs:
+  CI:
+    runs-on: [ubuntu-24.04]
+
+    permissions:
+      contents: read # Required to checkout repository.
+      models: read # Required for AI inference.
+
+    steps:
+      - name: Echo context
+        env:
+          GH_JSON: ${{ toJson(github) }}
+        run: echo "$GH_JSON"
+
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          sparse-checkout: action.yml
+
+      - name: Inference request
+        id: prompt
+        uses: ./
+        with:
+          messages: '[{"role": "user", "content": "What is the capital of France?"}]'
+          model: openai/o4-mini
+          org: ${{ github.repository_owner}}
+          max-tokens: 100
+
+      - name: Echo outputs
+        continue-on-error: true
+        run: |
+          echo "response: ${{ steps.prompt.outputs.response }}"
+          echo "response-raw: ${{ steps.prompt.outputs.response-raw }}"

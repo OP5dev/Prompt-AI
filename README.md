@@ -1,18 +1,67 @@
-[![GitHub license](https://img.shields.io/github/license/op5dev/inference-request?logo=apache&label=License)](LICENSE "Apache License 2.0.")
-[![GitHub release tag](https://img.shields.io/github/v/release/op5dev/inference-request?logo=semanticrelease&label=Release)](https://github.com/op5dev/inference-request/releases "View all releases.")
+[![GitHub license](https://img.shields.io/github/license/op5dev/ai-inference-request?logo=apache&label=License)](LICENSE "Apache License 2.0.")
+[![GitHub release tag](https://img.shields.io/github/v/release/op5dev/ai-inference-request?logo=semanticrelease&label=Release)](https://github.com/op5dev/ai-inference-request/releases "View all releases.")
 *
-[![GitHub repository stargazers](https://img.shields.io/github/stars/op5dev/inference-request)](https://github.com/op5dev/inference-request "Become a stargazer.")
+[![GitHub repository stargazers](https://img.shields.io/github/stars/op5dev/ai-inference-request)](https://github.com/op5dev/ai-inference-request "Become a stargazer.")
 
-# Inference Request via GitHub Action
+# AI Inference Request via GitHub Action
 
 > [!TIP]
-> Run an inference request to GitHub Models via GitHub Action.
+> [AI inference request](https://docs.github.com/en/rest/models/inference#run-an-ai-inference-request "GitHub API documentation.") [GitHub Models](https://github.com/marketplace?type=models "GitHub Models catalog.") with this [GitHub Action](https://github.com/marketplace/actions/ai-inference-request-via-github-action "GitHub Actions marketplace.").
 
 </br>
 
 ## Usage Examples
 
+```yml
+on:
+  issues:
+    types: opened
+
+jobs:
+  summary:
+    runs-on: ubuntu-latest
+
+    permissions:
+      issues: write
+      models: read
+
+    steps:
+      - name: Summarize issue
+        id: prompt
+        uses: op5dev/ai-inference-request@v2
+        with:
+          messages: '[{"role": "user", "content": "Concisely summarize this GitHub issue titled ${{ github.event.issue.title }}: ${{ github.event.issue.body }}"}]'
+          model: openai/o4-mini
+
+      - name: Comment summary
+        run: gh issue comment $NUMBER --body "$SUMMARY"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBER: ${{ github.event.issue.number }}
+          SUMMARY: ${{ steps.prompt.outputs.response }}
+```
+
 </br>
+
+## Inputs
+
+Only `messages` and `model` are required inputs. [Compare available AI models](https://docs.github.com/en/copilot/using-github-copilot/ai-models/choosing-the-right-ai-model-for-your-task "Comparison of AI models for GitHub.") to choose the best one for your use-case.
+
+| Name                 | Description                                                                                          |
+| -------------------- | ---------------------------------------------------------------------------------------------------- |
+| `github-api-version` | GitHub API version.</br>Default: `2022-11-28`                                                        |
+| `github-token`       | GitHub token.</br>Default: `github.token`                                                            |
+| `max-tokens`         | Maximum number of tokens to generate in the completion.</br>Example: `1000`                          |
+| `messages`           | Messages to send to the model in JSON format.</br>Example: `[{"role": "user", "content": "Hello!"}]` |
+| `model`              | Model to use for inference.</br>Example: `openai/o4-mini`                                            |
+| `org`                | Organization to which the request should be attributed.</br>Example: `github.repository_owner`       |
+
+## Outputs
+
+| Name           | Description                                  |
+| -------------- | -------------------------------------------- |
+| `response`     | Response content from the inference request. |
+| `response-raw` | Raw, complete response in JSON format.       |
 
 ## Security
 
@@ -26,21 +75,21 @@ View [security policy and reporting instructions](SECURITY.md).
 
 ## Changelog
 
-View [all notable changes](https://github.com/op5dev/inference-request/releases "Releases.") to this project in [Keep a Changelog](https://keepachangelog.com "Keep a Changelog.") format, which adheres to [Semantic Versioning](https://semver.org "Semantic Versioning.").
+View [all notable changes](https://github.com/op5dev/ai-inference-request/releases "Releases.") to this project in [Keep a Changelog](https://keepachangelog.com "Keep a Changelog.") format, which adheres to [Semantic Versioning](https://semver.org "Semantic Versioning.").
 
 > [!TIP]
 >
 > All forms of **contribution are very welcome** and deeply appreciated for fostering open-source projects.
 >
-> - [Create a PR](https://github.com/op5dev/inference-request/pulls "Create a pull request.") to contribute changes you'd like to see.
-> - [Raise an issue](https://github.com/op5dev/inference-request/issues "Raise an issue.") to propose changes or report unexpected behavior.
-> - [Open a discussion](https://github.com/op5dev/inference-request/discussions "Open a discussion.") to discuss broader topics or questions.
-> - [Become a stargazer](https://github.com/op5dev/inference-request/stargazers "Become a stargazer.") if you find this project useful.
+> - [Create a PR](https://github.com/op5dev/ai-inference-request/pulls "Create a pull request.") to contribute changes you'd like to see.
+> - [Raise an issue](https://github.com/op5dev/ai-inference-request/issues "Raise an issue.") to propose changes or report unexpected behavior.
+> - [Open a discussion](https://github.com/op5dev/ai-inference-request/discussions "Open a discussion.") to discuss broader topics or questions.
+> - [Become a stargazer](https://github.com/op5dev/ai-inference-request/stargazers "Become a stargazer.") if you find this project useful.
 
 </br>
 
 ## License
 
 - This project is licensed under the **permissive** [Apache License 2.0](LICENSE "Apache License 2.0.").
-- All works herein are my own, shared of my own volition, and [contributors](https://github.com/op5dev/inference-request/graphs/contributors "Contributors.").
-- Copyright 2016-present [Rishav Dhar](https://github.com/rdhar "Rishav Dhar's GitHub profile.") — All wrongs reserved.
+- All works herein are my own, shared of my own volition, and [contributors](https://github.com/op5dev/ai-inference-request/graphs/contributors "Contributors.").
+- Copyright 2016-present [Rishav Dhar](https://rdhar.dev "Rishav Dhar's profile.") — All wrongs reserved.
