@@ -43,9 +43,10 @@ runs:
           --header "Content-Type: application/json" \
           --header "X-GitHub-Api-Version: $API_VERSION" \
           --data '{
-            "messages": '[{"role": "user", "content": "Hello!"}]',
+            "messages": [{"role": "user", "content": "What is the capital of France?"}],
             "model": "${{ inputs.model }}"
-            }')
+          }'
+        )
 
         # "messages": '"${{ inputs.messages }}"',
         # "model": '"${{ inputs.model }}"'
