@@ -69,11 +69,11 @@ Either `payload` or `payload-file` is required. [Compare available AI models](ht
 
 ## Outputs
 
-| Name           | Description                                                     |
-| -------------- | --------------------------------------------------------------- |
-| `response`     | Response content from the inference request.                    |
-| `response-raw` | File path containing the complete, raw response in JSON format. |
-| `payload`      | Body parameters of the inference request in JSON format.        |
+| Name           | Description                                              |
+| -------------- | -------------------------------------------------------- |
+| `response`     | Response content from the inference request.             |
+| `response-raw` | File path containing the complete, raw response.         |
+| `payload`      | Body parameters of the inference request in JSON format. |
 
 </br>
 
