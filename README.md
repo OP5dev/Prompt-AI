@@ -12,6 +12,8 @@
 
 ## Usage Examples
 
+[Compare available AI models](https://docs.github.com/en/copilot/using-github-copilot/ai-models/choosing-the-right-ai-model-for-your-task "Comparison of AI models for GitHub.") to choose the best one for your use-case.
+
 ```yml
 on:
   issues:
@@ -53,7 +55,7 @@ jobs:
 
 ## Inputs
 
-Either `payload` or `payload-file` is required. [Compare available AI models](https://docs.github.com/en/copilot/using-github-copilot/ai-models/choosing-the-right-ai-model-for-your-task "Comparison of AI models for GitHub.") to choose the best one for your use-case.
+Either `payload` or `payload-file` is required.
 
 | Type   | Name                 | Description                                                                                                 |
 | ------ | -------------------- | ----------------------------------------------------------------------------------------------------------- |
