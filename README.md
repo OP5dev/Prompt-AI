@@ -6,7 +6,7 @@
 # AI Inference Request via GitHub Action
 
 > [!TIP]
-> [AI inference request](https://docs.github.com/en/rest/models/inference#run-an-ai-inference-request "GitHub API documentation.") [GitHub Models](https://github.com/marketplace?type=models "GitHub Models catalog.") with this [GitHub Action](https://github.com/marketplace/actions/ai-inference-request-via-github-action "GitHub Actions marketplace.").
+> [AI inference request](https://docs.github.com/en/rest/models/inference#run-an-ai-inference-request "GitHub API documentation.") [GitHub Models](https://github.com/marketplace?type=models "GitHub Models catalog.") via this [GitHub Action](https://github.com/marketplace/actions/ai-inference-request-via-github-action "GitHub Actions marketplace.").
 
 </br>
 
@@ -30,8 +30,13 @@ jobs:
         id: prompt
         uses: op5dev/ai-inference-request@v2
         with:
-          messages: '[{"role": "user", "content": "Concisely summarize this GitHub issue titled ${{ github.event.issue.title }}: ${{ github.event.issue.body }}"}]'
-          model: openai/o4-mini
+          payload: |
+            model: openai/gpt-4.1-mini
+            messages:
+              - role: user
+                content: Concisely summarize this GitHub issue titled ${{ github.event.issue.title }}: ${{ github.event.issue.body }}
+            temperature: 0.9
+            top_p: 0.9
 
       - name: Comment summary
         run: gh issue comment $NUMBER --body "$SUMMARY"
