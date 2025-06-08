@@ -18,11 +18,11 @@ inputs:
     required: false
   payload:
     default: ""
-    description: Body parameters of the inference request in YAML format
+    description: Body parameters of the inference request in YAML format (e.g., `model…`)
     required: false
   payload-file:
     default: ""
-    description: Path to a file containing the body parameters of the inference request (e.g., `./payload.[json\|yml]`)
+    description: Path to a file containing the body parameters of the inference request (e.g., `./payload.{json,yml}`)
     required: false
   show-payload:
     default: "true"

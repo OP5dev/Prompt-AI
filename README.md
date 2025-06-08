@@ -55,15 +55,15 @@ jobs:
 
 Either `payload` or `payload-file` is required. [Compare available AI models](https://docs.github.com/en/copilot/using-github-copilot/ai-models/choosing-the-right-ai-model-for-your-task "Comparison of AI models for GitHub.") to choose the best one for your use-case.
 
-| Type   | Name                 | Description                                                                                                  |
-| ------ | -------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Data   | `payload`            | Body parameters of the inference request in YAML format.</br>Example: `model:…`                              |
-| Data   | `payload-file`       | Path to a file containing the body parameters of the inference request.</br>Example: `./payload.[json\|yml]` |
-| Config | `show-payload`       | Whether to show the payload in the logs.</br>Default: `true`                                                 |
-| Config | `show-response`      | Whether to show the response content in the logs.</br>Default: `true`                                        |
-| Admin  | `github-api-version` | GitHub API version.</br>Default: `2022-11-28`                                                                |
-| Admin  | `github-token`       | GitHub token.</br>Default: `github.token`                                                                    |
-| Admin  | `org`                | Organization for request attribution.</br>Example: `github.repository_owner`                                 |
+| Type   | Name                 | Description                                                                                                 |
+| ------ | -------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Data   | `payload`            | Body parameters of the inference request in YAML format.</br>Example: `model…`                              |
+| Data   | `payload-file`       | Path to a file containing the body parameters of the inference request.</br>Example: `./payload.{json,yml}` |
+| Config | `show-payload`       | Whether to show the payload in the logs.</br>Default: `true`                                                |
+| Config | `show-response`      | Whether to show the response content in the logs.</br>Default: `true`                                       |
+| Admin  | `github-api-version` | GitHub API version.</br>Default: `2022-11-28`                                                               |
+| Admin  | `github-token`       | GitHub token.</br>Default: `github.token`                                                                   |
+| Admin  | `org`                | Organization for request attribution.</br>Example: `github.repository_owner`                                |
 
 </br>
 
