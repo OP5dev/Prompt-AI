@@ -6,7 +6,7 @@
 # AI Inference Request via GitHub Action
 
 > [!TIP]
-> [AI inference request](https://docs.github.com/en/rest/models/inference#run-an-ai-inference-request "GitHub API documentation.") [GitHub Models](https://github.com/marketplace?type=models "GitHub Models catalog.") via this [GitHub Action](https://github.com/marketplace/actions/ai-inference-request-via-github-action "GitHub Actions marketplace.").
+> [AI inference request](https://docs.github.com/en/rest/models/inference?apiVersion=2022-11-28#run-an-inference-request "GitHub API documentation.") GitHub Models via this [GitHub Action](https://github.com/marketplace/actions/ai-inference-request-via-github-action "GitHub Actions marketplace.").
 
 </br>
 
@@ -55,7 +55,7 @@ jobs:
 
 ## Inputs
 
-Either `payload` or `payload-file` is required.
+Either `payload` or `payload-file` is required with at least `model` and `messages` parameters, per [documentation](https://docs.github.com/en/rest/models/inference?apiVersion=2022-11-28#run-an-inference-request "GitHub API documentation.").
 
 | Type   | Name                 | Description                                                                                                 |
 | ------ | -------------------- | ----------------------------------------------------------------------------------------------------------- |
