@@ -1,32 +1,36 @@
 ---
 name: AI Inference Request via GitHub Action
 author: Rishav Dhar (https://rdhar.dev)
-description: AI inference request GitHub Models with this GitHub Action.
+description: AI inference request GitHub Models via this GitHub Action.
 
 inputs:
   github-api-version:
     default: "2022-11-28"
-    description: "GitHub API version (e.g., `2022-11-28`)."
+    description: GitHub API version (e.g., `2022-11-28`)
     required: false
   github-token:
-    default: ${{ github.token }}
-    description: "GitHub token (e.g., `github.token`)."
+    default: "${{ github.token }}"
+    description: GitHub token (e.g., `github.token`)
     required: false
-  max-tokens:
-    default: ""
-    description: "Maximum number of tokens to generate in the completion (e.g., `1000`)."
-    required: false
-  messages:
-    default: ""
-    description: 'Messages to send to the model in JSON format (e.g., `[{"role": "user", "content": "Hello!"}]`).'
-    required: true
-  model:
-    default: ""
-    description: "Model to use for inference (e.g., `openai/o4-mini`)."
-    required: true
   org:
     default: ""
-    description: "Organization to which the request should be attributed (e.g., `github.repository_owner`)."
+    description: Organization for request attribution (e.g., `github.repository_owner`)
+    required: false
+  payload:
+    default: ""
+    description: Body parameters of the inference request in YAML format (e.g., `model…`)
+    required: false
+  payload-file:
+    default: ""
+    description: Path to a file containing the body parameters of the inference request (e.g., `./payload.{json,yml}`)
+    required: false
+  show-payload:
+    default: "true"
+    description: Whether to show the payload in the logs (e.g., `true`)
+    required: false
+  show-response:
+    default: "true"
+    description: Whether to show the response content in the logs (e.g., `true`)
     required: false
 
 runs:
@@ -38,31 +42,62 @@ runs:
         API_VERSION: ${{ inputs.github-api-version }}
         GH_TOKEN: ${{ inputs.github-token }}
         ORG: ${{ inputs.org != '' && format('orgs/{0}/', inputs.org) || '' }}
+        PAYLOAD: ${{ inputs.payload }}
+        PAYLOAD_FILE: ${{ inputs.payload-file }}
+        SHOW_PAYLOAD: ${{ inputs.show-payload }}
+        SHOW_RESPONSE: ${{ inputs.show-response }}
       run: |
-        GH_HOST=$(echo $GITHUB_SERVER_URL | sed 's/.*:\/\///')
+        # AI inference request
+        if [[ -n "$PAYLOAD_FILE" ]]; then
+          # Check if the file exists
+          if [[ ! -f "$PAYLOAD_FILE" ]]; then
+            echo "Error: Payload file '$PAYLOAD_FILE' does not exist." >&2
+            exit 1
+          fi
+          # Determine whether the format is JSON (starts with '{') or YAML (default)
+          first_char=$(sed -n 's/^[[:space:]]*\(.\).*/\1/p; q' "$PAYLOAD_FILE")
+          if [[ "$first_char" == '{' ]]; then
+            body=$(cat "$PAYLOAD_FILE")
+          else
+            body=$(yq --output-format json "$PAYLOAD_FILE")
+          fi
+        else
+          body=$(echo "$PAYLOAD" | yq --output-format json)
+        fi
+        echo "payload_json=$(echo $body)" >> $GITHUB_OUTPUT
+        if [[ "${SHOW_PAYLOAD,,}" == "true" ]]; then echo "$body"; fi
 
-        response_raw=$(curl --request POST --location https://models.github.ai/${ORG}inference/chat/completions \
+        # Create a temporary file to store the response
+        temp_file=$(mktemp)
+
+        # Send the AI inference request via GitHub API
+        curl \
+          --request POST \
+          --no-progress-meter \
+          --location "https://models.github.ai/${ORG}inference/chat/completions" \
           --header "Accept: application/vnd.github+json" \
           --header "Authorization: Bearer $GH_TOKEN" \
           --header "Content-Type: application/json" \
           --header "X-GitHub-Api-Version: $API_VERSION" \
-          --data '{
-            "messages": ${{ inputs.messages }},
-            "model": "${{ inputs.model }}"
-          }'
-        )
+          --data "$(echo $body | jq --compact-output --exit-status)" \
+          &> "$temp_file"
 
-        echo $response_raw
-        echo "response_raw=$response_raw" >> $GITHUB_OUTPUT
-        echo "response=$response_raw | jq --raw-output '.choices[0].message.content'" >> $GITHUB_OUTPUT
+        # In addition to the temporary file containing the full response,
+        # return the first 2**18 bytes of the response content (GitHub's limit)
+        echo "response_file=$temp_file" >> $GITHUB_OUTPUT
+        echo "response=$(cat $temp_file | jq --raw-output '.choices[0].message.content' | head --bytes 262144 --silent)" >> $GITHUB_OUTPUT
+        if [[ "${SHOW_RESPONSE,,}" == "true" ]]; then cat "$temp_file" | jq --raw-output '.choices[0].message.content' || true; fi
 
 outputs:
+  payload:
+    description: Body parameters of the inference request in JSON format.
+    value: ${{ steps.request.outputs.payload_json }}
   response:
-    description: "Response content from the inference request."
+    description: Response content from the inference request.
     value: ${{ steps.request.outputs.response }}
-  response-raw:
-    description: "Raw, complete response in JSON format."
-    value: ${{ steps.request.outputs.response_raw }}
+  response-file:
+    description: File path containing the complete, raw response in JSON format.
+    value: ${{ steps.request.outputs.response_file }}
 
 branding:
   color: white

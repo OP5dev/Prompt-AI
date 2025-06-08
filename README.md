@@ -12,6 +12,8 @@
 
 ## Usage Examples
 
+[Compare available AI models](https://docs.github.com/en/copilot/using-github-copilot/ai-models/choosing-the-right-ai-model-for-your-task "Comparison of AI models for GitHub.") to choose the best one for your use-case.
+
 ```yml
 on:
   issues:
@@ -33,15 +35,18 @@ jobs:
           payload: |
             model: openai/gpt-4.1-mini
             messages:
+              - role: system
+                content: You are a helpful assistant running within GitHub CI.
               - role: user
                 content: Concisely summarize this GitHub issue titled ${{ github.event.issue.title }}: ${{ github.event.issue.body }}
+            max_tokens: 100
             temperature: 0.9
             top_p: 0.9
 
       - name: Comment summary
         run: gh issue comment $NUMBER --body "$SUMMARY"
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           NUMBER: ${{ github.event.issue.number }}
           SUMMARY: ${{ steps.prompt.outputs.response }}
 ```
@@ -50,23 +55,29 @@ jobs:
 
 ## Inputs
 
-Only `messages` and `model` are required inputs. [Compare available AI models](https://docs.github.com/en/copilot/using-github-copilot/ai-models/choosing-the-right-ai-model-for-your-task "Comparison of AI models for GitHub.") to choose the best one for your use-case.
+Either `payload` or `payload-file` is required.
 
-| Name                 | Description                                                                                          |
-| -------------------- | ---------------------------------------------------------------------------------------------------- |
-| `github-api-version` | GitHub API version.</br>Default: `2022-11-28`                                                        |
-| `github-token`       | GitHub token.</br>Default: `github.token`                                                            |
-| `max-tokens`         | Maximum number of tokens to generate in the completion.</br>Example: `1000`                          |
-| `messages`           | Messages to send to the model in JSON format.</br>Example: `[{"role": "user", "content": "Hello!"}]` |
-| `model`              | Model to use for inference.</br>Example: `openai/o4-mini`                                            |
-| `org`                | Organization to which the request should be attributed.</br>Example: `github.repository_owner`       |
+| Type   | Name                 | Description                                                                                                 |
+| ------ | -------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Data   | `payload`            | Body parameters of the inference request in YAML format.</br>Example: `model…`                              |
+| Data   | `payload-file`       | Path to a file containing the body parameters of the inference request.</br>Example: `./payload.{json,yml}` |
+| Config | `show-payload`       | Whether to show the payload in the logs.</br>Default: `true`                                                |
+| Config | `show-response`      | Whether to show the response content in the logs.</br>Default: `true`                                       |
+| Admin  | `github-api-version` | GitHub API version.</br>Default: `2022-11-28`                                                               |
+| Admin  | `github-token`       | GitHub token.</br>Default: `github.token`                                                                   |
+| Admin  | `org`                | Organization for request attribution.</br>Example: `github.repository_owner`                                |
+
+</br>
 
 ## Outputs
 
-| Name           | Description                                  |
-| -------------- | -------------------------------------------- |
-| `response`     | Response content from the inference request. |
-| `response-raw` | Raw, complete response in JSON format.       |
+| Name           | Description                                              |
+| -------------- | -------------------------------------------------------- |
+| `response`     | Response content from the inference request.             |
+| `response-raw` | File path containing the complete, raw response.         |
+| `payload`      | Body parameters of the inference request in JSON format. |
+
+</br>
 
 ## Security
 

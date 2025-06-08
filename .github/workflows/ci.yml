@@ -29,13 +29,27 @@ jobs:
         id: prompt
         uses: ./
         with:
-          messages: '[{"role": "user", "content": "What is the capital of France?"}]'
-          model: openai/o4-mini
-          org: ${{ github.repository_owner}}
-          max-tokens: 100
+          payload: |
+            model: openai/gpt-4.1-mini
+            messages:
+              - role: system
+                content: You are a helpful assistant
+              - role: user
+                content: What is the capital of France
+            max_tokens: 100
+            temperature: 0.9
+            top_p: 0.9
 
       - name: Echo outputs
-        continue-on-error: true
         run: |
-          echo "response: ${{ steps.prompt.outputs.response }}"
-          echo "response-raw: ${{ steps.prompt.outputs.response-raw }}"
+          echo "response:"
+          echo "${{ steps.prompt.outputs.response }}"
+
+          echo "response-file:"
+          echo "${{ steps.prompt.outputs.response-file }}"
+
+          echo "response-file contents:"
+          cat "${{ steps.prompt.outputs.response-file }}" | jq
+
+          echo "payload:"
+          echo "${{ steps.prompt.outputs.payload }}"
