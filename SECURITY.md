@@ -2,7 +2,7 @@
 
 > [!TIP]
 >
-> Pin your GitHub Action to a [commit SHA](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions "Security hardening for GitHub Actions.") to harden your CI/CD pipeline security against supply chain attacks.
+> Pin your GitHub Action to a [commit SHA](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions "Security hardening for GitHub Actions.") to harden your CI/CD **pipeline security** against supply chain attacks.
 
 </br>
 
