@@ -25,20 +25,21 @@ jobs:
           persist-credentials: false
           sparse-checkout: action.yml
 
-      - name: Inference request
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Run Terraform
+        id: terraform
+        continue-on-error: true
+        run: terraform plan
+
+      - name: AI inference request
         id: prompt
         uses: ./
         with:
-          payload: |
-            model: openai/gpt-4.1-mini
-            messages:
-              - role: system
-                content: You are a helpful assistant
-              - role: user
-                content: What is the capital of France
-            max_tokens: 100
-            temperature: 0.9
-            top_p: 0.9
+          system-prompt: You are a helpful DevOps assistant and expert at debugging Terraform errors.
+          user-prompt: Troubleshoot the following Terraform output; ${{ steps.terraform.outputs.stderr }}
+          show-payload: true
 
       - name: Echo outputs
         run: |
@@ -49,7 +50,4 @@ jobs:
           echo "${{ steps.prompt.outputs.response-file }}"
 
           echo "response-file contents:"
-          cat "${{ steps.prompt.outputs.response-file }}" | jq
-
-          echo "payload:"
-          echo "${{ steps.prompt.outputs.payload }}"
+          cat "${{ steps.prompt.outputs.response-file }}"
