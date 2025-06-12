@@ -1,36 +1,106 @@
 ---
-name: AI Inference Request via GitHub Action
+name: Prompt GitHub AI Models via GitHub Action
 author: Rishav Dhar (https://rdhar.dev)
-description: AI inference request GitHub Models via this GitHub Action.
+description: Prompt GitHub AI Models using inference request via GitHub Action API.
 
 inputs:
-  github-api-version:
-    default: "2022-11-28"
-    description: GitHub API version (e.g., `2022-11-28`)
+  # Common inputs.
+  model:
+    default: openai/gpt-4.1-mini
+    description: Model ID to use for the inference request. (e.g., `openai/gpt-4.1-mini`)
     required: false
-  github-token:
-    default: "${{ github.token }}"
-    description: GitHub token (e.g., `github.token`)
+  system-prompt:
+    default: You are a helpful technical assistant, experienced in software engineering CI/CD workflows. Respond concisely, to the point, and in a single response without requesting subsequent user input.
+    description: Prompt associated with the `system` role. (e.g., `You are a helpful software engineering assistant`)
+    required: false
+  user-prompt:
+    default: List best practices for workflows with GitHub Actions.
+    description: Prompt associated with the `user` role. (e.g., `List best practices for workflows with GitHub Actions`)
+    required: false
+  max-tokens:
+    default: ""
+    description: The maximum number of tokens to generate in the completion. The token count of your prompt plus `max-tokens` cannot exceed the model's context length. (e.g., `100`)
+    required: false
+  temperature:
+    default: ""
+    description: The sampling temperature to use that controls the apparent creativity of generated completions. Higher values will make output more random while lower values will make results more focused and deterministic. (e.g., range is `[0, 1]`)
+    required: false
+  top-p:
+    default: ""
+    description: An alternative to sampling with temperature called nucleus sampling. This value causes the model to consider the results of tokens with the provided probability mass. (e.g., range is `[0, 1]`)
+    required: false
+
+  # Additional inputs.
+  frequency-penalty:
+    default: ""
+    description: A value that influences the probability of generated tokens appearing based on their cumulative frequency in generated text. (e.g., range is `[-2, 2]`)
+    required: false
+  modalities:
+    default: ""
+    description: The modalities that the model is allowed to use for the chat completions response. (e.g., from `text` and `audio`)
     required: false
   org:
     default: ""
-    description: Organization for request attribution (e.g., `github.repository_owner`)
+    description: Organization to which the request is to be attributed. (e.g., `github.repository_owner`)
     required: false
+  presence-penalty:
+    default: ""
+    description: A value that influences the probability of generated tokens appearing based on their existing presence in generated text. (e.g., range is `[-2, 2]`)
+    required: false
+  response-format-schema:
+    default: ""
+    description: Desired format for structured JSON response. (TODO)
+  seed:
+    default: ""
+    description: If specified, the system will make a best effort to sample deterministically such that repeated requests with the same seed and parameters should return the same result. (e.g., `123456789`)
+    required: false
+  stop:
+    default: ""
+    description: A collection of textual sequences that will end completion generation. (e.g., `["\n\n", "END"]`)
+    required: false
+  stream:
+    default: ""
+    description: A value indicating whether chat completions should be streamed for this request. (e.g., `false`)
+    required: false
+  stream-include-usage:
+    default: ""
+    description: Whether to include usage information in the response. (e.g., `false`)
+    required: false
+  tool-choice:
+    default: ""
+    description: If specified, the model will configure which of the provided tools it can use for the chat completions response. (e.g., 'auto', 'required', or 'none')
+    required: false
+  tools:
+    default: ""
+    description: A list of tools the model may request to call. (TODO)
+    required: false
+
+  # Payload inputs.
   payload:
     default: ""
-    description: Body parameters of the inference request in YAML format (e.g., `model…`)
+    description: Body parameters of the inference request in JSON format. (e.g., `{"model"…`)
     required: false
   payload-file:
     default: ""
-    description: Path to a file containing the body parameters of the inference request (e.g., `./payload.{json,yml}`)
+    description: Path to a JSON file containing the body parameters of the inference request. (e.g., `./payload.json`)
     required: false
   show-payload:
-    default: "true"
-    description: Whether to show the payload in the logs (e.g., `true`)
+    default: false
+    description: Whether to show the body parameters in the workflow log. (e.g., `false`)
     required: false
   show-response:
-    default: "true"
-    description: Whether to show the response content in the logs (e.g., `true`)
+    default: true
+    description: Whether to show the response content in the workflow log. (e.g., `true`)
+    required: false
+
+  # GitHub API inputs.
+  github-api-version:
+    default: "2022-11-28"
+    description: GitHub API version. (e.g., `2022-11-28`)
+    required: false
+  github-token:
+    default: ${{ github.token }}
+    description: GitHub token for authorization. (e.g., `github.token`)
     required: false
 
 runs:
@@ -39,9 +109,32 @@ runs:
     - id: request
       shell: bash
       env:
+        # Common inputs.
+        MODEL: ${{ inputs.model }}
+        SYSTEM_PROMPT: ${{ inputs.system-prompt }}
+        USER_PROMPT: ${{ inputs.user-prompt }}
+        MAX_TOKENS: ${{ inputs.max-tokens }}
+        TEMPERATURE: ${{ inputs.temperature }}
+        TOP_P: ${{ inputs.top-p }}
+
+        # Additional inputs.
+        FREQUENCY_PENALTY: ${{ inputs.frequency-penalty }}
+        MODALITIES: ${{ inputs.modalities }}
+        ORG: ${{ inputs.org != '' && format('orgs/{0}/', inputs.org) || '' }}
+        PRESENCE_PENALTY: ${{ inputs.presence-penalty }}
+        RESPONSE_FORMAT_SCHEMA: ${{ inputs.response-format-schema }}
+        SEED: ${{ inputs.seed }}
+        STOP: ${{ inputs.stop }}
+        STREAM: ${{ inputs.stream }}
+        STREAM_INCLUDE_USAGE: ${{ inputs.stream-include-usage }}
+        TOOL_CHOICE: ${{ inputs.tool-choice }}
+        TOOLS: ${{ inputs.tools }}
+
+        # GitHub API inputs.
         API_VERSION: ${{ inputs.github-api-version }}
         GH_TOKEN: ${{ inputs.github-token }}
-        ORG: ${{ inputs.org != '' && format('orgs/{0}/', inputs.org) || '' }}
+
+        # Payload inputs.
         PAYLOAD: ${{ inputs.payload }}
         PAYLOAD_FILE: ${{ inputs.payload-file }}
         SHOW_PAYLOAD: ${{ inputs.show-payload }}
@@ -54,21 +147,63 @@ runs:
             echo "Error: Payload file '$PAYLOAD_FILE' does not exist." >&2
             exit 1
           fi
-          # Determine whether the format is JSON (starts with '{') or YAML (default)
-          first_char=$(sed -n 's/^[[:space:]]*\(.\).*/\1/p; q' "$PAYLOAD_FILE")
-          if [[ "$first_char" == '{' ]]; then
-            body=$(cat "$PAYLOAD_FILE")
-          else
-            body=$(yq --output-format json "$PAYLOAD_FILE")
-          fi
+          body=$(cat "$PAYLOAD_FILE")
+        elif [[ -n "$PAYLOAD" ]]; then
+          body=$(echo "$PAYLOAD")
         else
-          body=$(echo "$PAYLOAD" | yq --output-format json)
+          body=$(jq --null-input \
+            --arg model "$MODEL" \
+            --arg system_prompt "$SYSTEM_PROMPT" \
+            --arg user_prompt "$USER_PROMPT" \
+            --arg max_tokens "$MAX_TOKENS" \
+            --arg temperature "$TEMPERATURE" \
+            --arg top_p "$TOP_P" \
+            --arg frequency_penalty "$FREQUENCY_PENALTY" \
+            --arg modalities "$MODALITIES" \
+            --arg org "$ORG" \
+            --arg presence_penalty "$PRESENCE_PENALTY" \
+            --arg response_format_schema "$RESPONSE_FORMAT_SCHEMA" \
+            --arg seed "$SEED" \
+            --arg stop "$STOP" \
+            --arg stream "$STREAM" \
+            --arg stream_include_usage "$STREAM_INCLUDE_USAGE" \
+            --arg tool_choice "$TOOL_CHOICE" \
+            --arg tools "$TOOLS" \
+            '{
+              model: $model,
+              messages: [
+                {
+                  role: "system",
+                  content: $system_prompt
+                },
+                {
+                  role: "user",
+                  content: $user_prompt
+                }
+              ],
+              max_tokens: $max_tokens,
+              temperature: $temperature,
+              top_p: $top_p,
+              frequency_penalty: $frequency_penalty,
+              modalities: ($modalities | split(",")),
+              org: $org,
+              presence_penalty: $presence_penalty,
+              response_format_schema: $response_format_schema,
+              seed: $seed,
+              stop: ($stop | split(",")),
+              stream: $stream,
+              stream_include_usage: $stream_include_usage,
+              tool_choice: $tool_choice,
+              tools: ($tools | split(","))
+            }'
+          )
         fi
-        echo "payload_json=$(echo $body)" >> $GITHUB_OUTPUT
+        body=$(echo "$body" | jq --compact-output --exit-status 'del(.[] | select(. == "" or . == [] or . == {} or . == null))')
         if [[ "${SHOW_PAYLOAD,,}" == "true" ]]; then echo "$body"; fi
 
         # Create a temporary file to store the response
         temp_file=$(mktemp)
+        echo "response_file=$temp_file" >> "$GITHUB_OUTPUT"
 
         # Send the AI inference request via GitHub API
         curl \
@@ -79,19 +214,17 @@ runs:
           --header "Authorization: Bearer $GH_TOKEN" \
           --header "Content-Type: application/json" \
           --header "X-GitHub-Api-Version: $API_VERSION" \
-          --data "$(echo $body | jq --compact-output --exit-status)" \
+          --data "$(echo "$body")" \
           &> "$temp_file"
 
-        # In addition to the temporary file containing the full response,
-        # return the first 2**18 bytes of the response content (GitHub's limit)
-        echo "response_file=$temp_file" >> $GITHUB_OUTPUT
-        echo "response=$(cat $temp_file | jq --raw-output '.choices[0].message.content' | head --bytes 262144 --silent)" >> $GITHUB_OUTPUT
-        if [[ "${SHOW_RESPONSE,,}" == "true" ]]; then cat "$temp_file" | jq --raw-output '.choices[0].message.content' || true; fi
+        # Return the first 2**18 bytes of the response content per GitHub's limit
+        delimiter=$(openssl rand -hex 8)
+        echo "response<<$delimiter" >> "$GITHUB_OUTPUT"
+        cat $temp_file | jq --raw-output '.choices[0].message.content' | head --bytes 262144 >> "$GITHUB_OUTPUT"
+        echo "$delimiter" >> "$GITHUB_OUTPUT"
+        if [[ "${SHOW_RESPONSE,,}" == "true" ]]; then cat $temp_file | jq --raw-output '.choices[0].message.content' || true; fi
 
 outputs:
-  payload:
-    description: Body parameters of the inference request in JSON format.
-    value: ${{ steps.request.outputs.payload_json }}
   response:
     description: Response content from the inference request.
     value: ${{ steps.request.outputs.response }}
