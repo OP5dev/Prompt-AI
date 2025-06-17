@@ -90,7 +90,7 @@ jobs:
           user-prompt: Troubleshoot the following Terraform output; ${{ steps.provision.outputs.result }}
           max-tokens: 500
           temperature: 0.7
-          top_p: 0.9
+          top-p: 0.9
 ```
 
 </br>
