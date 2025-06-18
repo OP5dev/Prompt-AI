@@ -48,7 +48,7 @@ jobs:
           SUMMARY: ${{ steps.prompt.outputs.response }}
 ```
 
-### Troubleshoot Terraform Deployments
+### Troubleshoot Terraform Infrastructure-as-Code
 
 ```yml
 on:
@@ -86,9 +86,53 @@ jobs:
         uses: op5dev/prompt-ai@v2
         with:
           model: openai/gpt-4.1-mini
-          system-prompt: You are a helpful DevOps assistant and expert at debugging Terraform errors.
+          system-prompt: You are a helpful DevOps assistant and expert at troubleshooting Terraform errors.
           user-prompt: Troubleshoot the following Terraform output; ${{ steps.provision.outputs.result }}
           max-tokens: 500
+```
+
+### Debug Nomad-Pack Deployment
+
+```yml
+on:
+  pull_request:
+  push:
+    branches: main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      models: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Nomad-Pack
+        uses: hashicorp/setup-nomad-pack@main
+
+      - name: Run Nomad-Pack
+        id: nomad
+        run: |
+          nomad-pack run . --verbose 2>&1 | tee log.txt
+          status=${PIPESTATUS[0]}
+          if [[ $status -ne 0 ]]; then
+            echo "log<<EOH" >> "$GITHUB_OUTPUT"
+            cat log.txt >> "$GITHUB_OUTPUT"
+            echo "EOH" >> "$GITHUB_OUTPUT"
+          fi
+          exit $status
+
+      - name: Debug Nomad-Pack
+        if: failure()
+        uses: op5dev/prompt-ai@v2
+        with:
+          model: openai/gpt-4.1-mini
+          system-prompt: You are a helpful DevOps assistant and expert at debugging Nomad-Pack deployments.
+          user-prompt: Debug the following Nomad-Pack deployment log; ${{ steps.nomad.outputs.log }}
           temperature: 0.7
           top-p: 0.9
 ```
